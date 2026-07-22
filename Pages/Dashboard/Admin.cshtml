@@ -1,0 +1,208 @@
+﻿@page
+@model SupportTicketSystem.Pages.Dashboard.AdminModel
+@{
+    ViewData["Title"] = "پنل مدیریت";
+    Layout = "_Layout";
+}
+
+<div class="min-h-screen flex bg-gray-100 font-vazir">
+    <!-- Mobile Sidebar Toggle -->
+    <div class="md:hidden fixed top-4 right-4 z-50">
+        <button id="menuToggle" class="bg-[#1e293b] text-white p-2 rounded-md shadow-md focus:outline-none">
+            ☰
+        </button>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-[#1e293b] text-white w-64 flex-shrink-0 p-6 space-y-4 transform md:translate-x-0 -translate-x-full fixed md:relative md:top-0 top-0 left-0 h-full md:h-auto z-40 transition-transform duration-300 ease-in-out rounded-r-xl shadow-2xl">
+        <h2 class="text-xl font-bold border-b border-gray-600 pb-4 mb-4">پنل مدیریت</h2>
+        <nav class="flex-1 space-y-2 text-sm font-medium">
+            <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800">✔ کاربران</a>
+            <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800">☰ تیکت‌ها</a>
+            <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800">➕ گزارش‌ها</a>
+        </nav>
+    </aside>
+
+    <!-- Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-40 z-30 hidden md:hidden"></div>
+
+    <!-- Main content -->
+    <main class="flex-1 p-4 md:p-6 grid grid-cols-1">
+
+        <!--chart-->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow p-4 ">
+                <h3 class="text-lg font-semibold mb-3 text-center">توزیع کارها بین کارشناسان</h3>
+                <div class="w-full">
+                    <canvas id="donutChart" class="w-full h-[300px]"></canvas>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 ">
+                <h3 class="text-lg font-semibold mb-3 text-center">وضعیت‌ کارها برای هر کارشناس</h3>
+                <div class="w-full">
+                    <canvas id="barChart" class="w-full h-[300px]"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Cards -->
+        <div id="status-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"></div>
+
+
+        <!-- Ticket Table -->
+        <div class="bg-white rounded-lg shadow p-4 overflow-x-auto">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <h2 class="text-xl font-semibold whitespace-nowrap">تیکت‌های ثبت‌شده</h2>
+                <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <input type="text" id="searchInput" placeholder="جستجو بر اساس نام کاربر..." class="border rounded px-3 py-1 text-sm w-full sm:w-auto" />
+                    <select id="statusFilter" class="border rounded px-3 py-1 text-sm w-full sm:w-auto">
+                        <option value="">فیلتر وضعیت</option>
+                        <option>در انتظار بررسی</option>
+                        <option>در حال انجام</option>
+                        <option>انجام شده</option>
+                        <option>باطل شده</option>
+                    </select>
+                </div>
+                <!--pdf-->
+                <button id="pdfBtn" class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700">دانلود گزارش PDF</button>
+            </div>
+
+            <div id="report-content" class="w-100">
+                <table class="w-full text-sm text-right border-collapse min-w-[600px] rounded-md">
+                    <thead class="bg-gray-100 text-gray-700 rounded-md">
+                        <tr>
+                            <th class="px-4 py-2">#</th>
+                            <th class="px-4 py-2">کاربر</th>
+                            <th class="px-4 py-2">عنوان</th>
+                            <th class="px-4 py-2">وضعیت</th>
+                            <th class="px-4 py-2">ارجاع به</th>
+                            <th class="px-4 py-2">عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticketTable" class="text-gray-800">
+                        <!-- Paginated Rows -->
+                    </tbody>
+                </table>
+
+                <!-- Pagination Controls -->
+                <div id="pagination" class="flex justify-center mt-4 gap-1 flex-wrap"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+@section Scripts {
+    <script type="module">
+        //  Import necessary modules
+        import { renderStatusCards } from '/js/statusCards.js';
+        import { renderCharts } from '/js/chartRender.js';
+        import { generateTicketPDF } from '/js/generatePdf.js';
+        import { setupTicketFilters } from '/js/ticketFilter.js';
+
+        //  DO NOT import renderPagination from multiple files
+        //  ONLY import from one source (tableManager.js in this case)
+        import { renderTable, renderPagination } from '/js/tableManager.js';
+
+        const ROWS_PER_PAGE = 10;
+        let allTickets = [];
+        let itUsers = [];
+        let currentPage = 1;
+        let filterController;
+
+        //  Load dashboard data and initialize UI
+        async function loadDashboard() {
+            try {
+                const res = await axios.get('/api/dashboard/admin');
+                const { tickets, summary, itUsers: users } = res.data;
+
+                renderStatusCards("status-cards", summary);
+                allTickets = tickets;
+                itUsers = users;
+                currentPage = 1;
+
+                renderCharts(tickets, itUsers);
+
+                //  Setup filters and pagination
+                filterController = setupTicketFilters(
+                    allTickets,
+                    renderPaginated,           // Callback to render filtered tickets
+                    (page) => currentPage = page,
+                    () => currentPage
+                );
+
+                filterController.applyFilters();
+            } catch (err) {
+                console.error("خطا در دریافت داده‌ها:", err);
+            }
+        }
+
+        //  Render paginated ticket table
+        function renderPaginated(tickets) {
+            renderTable(tickets, itUsers, currentPage, ROWS_PER_PAGE);
+            renderPagination(
+                tickets.length,
+                ROWS_PER_PAGE,
+                currentPage,
+                (page) => {
+                    currentPage = page;
+                    renderPaginated(tickets);
+                }
+            );
+        }
+
+        //  Handle ticket assignment
+          document.addEventListener("click", async (e) => {
+          if (e.target.classList.contains("update-btn")) {
+            const id = e.target.dataset.id;
+            const dropdown = e.target.closest("tr").querySelector("select.assign-dropdown");
+            const userId = dropdown.value;
+
+            const res = await axios.post(`/api/dashboard/assign/${id}`, { userId });
+
+            const ticket = allTickets.find(t => t.id == id);
+            if (ticket) {
+              ticket.assignedToId = parseInt(userId);
+              const selectedUser = itUsers.find(u => u.id == userId);
+              ticket.assignedTo = selectedUser ? selectedUser.fullName : "ناشناس";
+              ticket.status = "در حال انجام";  // ← این خط مهمه
+            }
+
+            filterController.applyFilters();
+
+            // 🔁 اضافه کن: بازمحاسبه کارت‌های وضعیت
+            const summary = {
+              pending: allTickets.filter(t => t.status === "در انتظار بررسی").length,
+              inprogress: allTickets.filter(t => t.status === "در حال انجام").length,
+              done: allTickets.filter(t => t.status === "انجام شده").length,
+              canceled: allTickets.filter(t => t.status === "باطل شده").length,
+            };
+            renderStatusCards("status-cards", summary);
+          }
+        });
+
+
+
+
+        //  PDF download: export all filtered tickets (not just current page)
+        document.getElementById("pdfBtn").addEventListener("click", () => {
+            const filteredTickets = filterController.getFiltered();
+            generateTicketPDF(filteredTickets); // Send all filtered data to PDF
+        });
+
+        //  Initialize dashboard on load
+        document.addEventListener("DOMContentLoaded", loadDashboard);
+
+
+    </script>
+
+    <!-- External Libraries -->
+    <script src="~/js/chart.js"></script>
+    <script src="~/js/html2pdf.bundle.min.js"></script>
+    <script src="~/js/sidebar.js"></script>
+}
+
+
+
+
+
+

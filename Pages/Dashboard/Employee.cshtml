@@ -1,0 +1,243 @@
+﻿@page
+@model SupportTicketSystem.Pages.Dashboard.EmployeeModel
+@{
+    ViewData["Title"] = "ارسال تیکت";
+    Layout = "_Layout";
+}
+
+<div class="min-h-screen flex bg-gray-100 font-vazir">
+    <!-- Mobile Sidebar Toggle -->
+    <div class="md:hidden fixed top-4 right-4 z-50">
+        <button id="menuToggle" class="bg-[#1e293b] text-white p-2 rounded-md shadow-md focus:outline-none">
+            ☰
+        </button>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-[#1e293b] text-white w-64 flex-shrink-0 p-6 space-y-4 transform md:translate-x-0 -translate-x-full fixed md:relative md:top-0 top-0 left-0 h-full md:h-auto z-40 transition-transform duration-300 ease-in-out rounded-r-xl shadow-2xl">
+        <h2 class="text-xl font-bold border-b border-gray-600 pb-4 mb-4">@Model.DisplayName</h2>
+        <nav class="flex-1 space-y-2 text-sm font-medium">
+            <a href="#divSendTicket" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800">ارسال تیکت</a>
+            <a href="#divTarikhcheh" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800">تاریخچه</a>
+        </nav>
+    </aside>
+
+    <!-- Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black bg-opacity-40 z-30 hidden md:hidden">overlay</div>
+
+    <!-- Main content -->
+    <main class="flex-1 p-6">
+        <div id="toast-container" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 hidden">
+            <div id="toast" class="px-6 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 border border-gray-400 bg-white text-gray-700">
+                <span id="toast-icon"></span>
+                <span id="toast-message"></span>
+            </div>
+        </div>
+
+        <div id="divTarikhcheh" class="bg-white rounded-lg shadow p-4 mb-6 overflow-x-auto">
+            <h2 class="text-lg font-bold mb-3">تاریخچه تیکت‌های شما</h2>
+            @if (Model.UserTickets.Any())
+            {
+                <table class="w-full text-sm border border-gray-200">
+                    <thead class="bg-gray-100 text-right">
+                        <tr>
+                            <th class="p-2">عنوان</th>
+                            <th class="p-2">تاریخ</th>
+                            <th class="p-2">اولویت</th>
+                            <th class="p-2">دسته بندی</th>
+                            <th class="p-2">وضعیت</th>
+                            <th class="p-2">فایل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ticket-list">
+                        @foreach (var ticket in Model.UserTickets)
+                        {
+                            <tr class="border-t border-gray-200">
+                                <td class="p-2">@ticket.Title</td>
+                                <td class="p-2">@ticket.CreatedAtPersion</td>
+                                <td class="p-2">@ticket.Priority</td>
+                                <td class="p-2">@ticket.CategoryText</td>
+                                <td class="p-2">@ticket.Status</td>
+                                <td class="p-2">
+                                    @if (!string.IsNullOrEmpty(ticket.AttachmentPath))
+                                    {
+                                        <a href="@ticket.AttachmentPath" target="_blank" class="text-blue-600 underline">دانلود</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-gray-400">ندارد</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                
+            }
+            else
+            {
+                <div class="text-gray-500 text-sm">هنوز تیکتی ارسال نکرده‌اید.</div>
+            }
+            <div id="pagination" class="flex justify-center mt-4 gap-1 flex-wrap"></div>
+        </div>
+
+        <div id="divSendTicket" class="bg-white rounded-lg shadow p-6 mx-auto">
+            <h2 class="text-2xl font-bold mb-6 text-center">ارسال درخواست پشتیبانی</h2>
+            <form method="post" enctype="multipart/form-data" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">عنوان</label>
+                    <input type="text" name="title" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">توضیحات</label>
+                    <textarea name="description" rows="5" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">اولویت</label>
+                    <select name="priority" id="priority" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="کم">کم</option>
+                        <option value="متوسط">متوسط</option>
+                        <option value="زیاد">زیاد</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">دسته بندی</label>
+                    <select name="category" id="category" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="1">سخت افزار</option>
+                        <option value="2">نرم افزار</option>
+                        <option value="3">شبکه</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">فایل ضمیمه</label>
+                    <input type="file" name="attachment" class="w-full" />
+                </div>
+
+                <button id="submit-btn" type="button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition">
+                    ارسال درخواست
+                </button>
+            </form>
+        </div>
+    </main>
+</div>
+
+@section Scripts {
+
+    <script>
+        const ROWS_PER_PAGE = 10;       
+        let currentPage = @Model.currentPage;
+
+        function showToast(message, isSuccess = true) {
+            const toastContainer = document.getElementById("toast-container");
+            const toastMessage = document.getElementById("toast-message");
+            const toastIcon = document.getElementById("toast-icon");
+
+            toastMessage.textContent = message;
+            toastIcon.innerHTML = isSuccess
+                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L9 11.586 6.707 9.293a1 1 0 10-1.414 1.414L9 14.414l7.121-7.121a1 1 0 000-1.414z" clip-rule="evenodd" /></svg>`
+                : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-10.707a1 1 0 00-1.414-1.414L10 8.586 7.707 6.293a1 1 0 00-1.414 1.414L8.586 10l-2.293 2.293a1 1 0 001.414 1.414L10 11.414l2.293 2.293a1 1 0 001.414-1.414L11.414 10l2.293-2.293z" clip-rule="evenodd" /></svg>`;
+
+            toastContainer.classList.remove("hidden");
+
+            setTimeout(() => {
+                toastContainer.classList.add("hidden");
+            }, 3000);
+        }
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            const btn = document.getElementById("submit-btn");
+            if (btn) {
+                btn.addEventListener("click", async function () {
+                    const formData = new FormData();
+                    const title = document.querySelector('[name="title"]').value;
+                    const description = document.querySelector('[name="description"]').value;
+                    const priority = document.querySelector('[name="priority"]').value;
+                    const category = document.querySelector('[name="category"]').value;
+                    var e =document.querySelector('[name="category"]');                    
+                    var categorytext=e.options[e.selectedIndex].text;
+                    
+                    const fileInput = document.querySelector('[name="attachment"]');
+
+                    formData.append("title", title);
+                    formData.append("description", description);
+                    formData.append("priority", priority);
+                    formData.append("categoryid", category);
+                    formData.append("categorytext", categorytext);
+                    if (fileInput.files.length > 0) {
+                        formData.append("attachment", fileInput.files[0]);
+                    }
+
+                    try {
+                        const res = await axios.post('/api/tickets', formData, {
+                            headers: { 'Content-Type': 'multipart/form-data' },
+                            withCredentials: true
+                        });
+
+                        showToast(res.data?.message || "با موفقیت ثبت شد ✅", true);
+
+                        const now = new Date();
+                        const persianDate = now.toLocaleDateString('fa-IR');
+
+                        const newRow = document.createElement("tr");
+                        newRow.className = "border-t border-gray-200";
+                        newRow.innerHTML = `
+                            <td class="p-2">${title}</td>
+                            <td class="p-2">${persianDate}</td>
+                            <td class="p-2">${priority}</td>
+                            <td class="p-2">${categorytext}</td>
+                            <td class="p-2">در انتظار بررسی</td>
+                            <td class="p-2">
+                                ${fileInput.files.length > 0
+                                    ? `<span class="text-gray-400">منتشر نشده</span>`
+                                    : `<span class="text-gray-400">ندارد</span>`}
+                            </td>`;
+
+                        const tableBody = document.getElementById("ticket-list");
+                        if (tableBody) {
+                            tableBody.prepend(newRow);
+                        }
+
+                        document.querySelector("form").reset();
+                    } catch (err) {
+                        console.error(err);
+                        showToast("❌ ارسال تیکت با خطا مواجه شد.", false);
+                    }
+                });
+            }
+
+            // Load Notifications
+            try {
+                const res = await axios.get("/api/notifications", { withCredentials: true });
+                if (res.data && res.data.length > 0) {
+                    res.data.forEach(n => {
+                        showToast(n.message);
+                    });
+                }
+            } catch (err) {
+                console.error("خطا در دریافت نوتیفیکیشن‌ها", err);
+            }
+        });
+        function renderPagination(totalItems) {
+            const pageCount = Math.ceil(totalItems / ROWS_PER_PAGE);
+            const pagination = document.getElementById("pagination");
+            pagination.innerHTML = "";
+
+            for (let i = 1; i <= pageCount; i++) {
+                const btn = document.createElement("a");
+                btn.textContent = i;
+                btn.className = `px-3 py-1 border rounded mx-1 mb-1 ${i === currentPage ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'}`;
+                btn.addEventListener("click", () => {
+                    currentPage = i;
+                    renderTable();
+                });
+                btn.href = "Employee?pagenumber="+i.toString();
+                pagination.appendChild(btn);
+            }
+        }
+        renderPagination(@Model.totalcount)
+    </script>
+    <script src="~/js/sidebar.js"></script>
+
+}
