@@ -126,9 +126,14 @@
 @section Scripts {
 
     <script>
+
         const ROWS_PER_PAGE = 10;       
         let currentPage = @Model.currentPage;
+        function reloadPage() {
+            location.reload();
+        }
 
+        
         function showToast(message, isSuccess = true) {
             const toastContainer = document.getElementById("toast-container");
             const toastMessage = document.getElementById("toast-message");
@@ -176,8 +181,9 @@
                         });
 
                         showToast(res.data?.message || "با موفقیت ثبت شد ✅", true);
-
-                        const now = new Date();
+                        window.setTimeout(reloadPage, 3000);
+                        
+                        /*const now = new Date();
                         const persianDate = now.toLocaleDateString('fa-IR');
 
                         const newRow = document.createElement("tr");
@@ -199,7 +205,7 @@
                             tableBody.prepend(newRow);
                         }
 
-                        document.querySelector("form").reset();
+                        document.querySelector("form").reset();*/
                     } catch (err) {
                         console.error(err);
                         showToast("❌ ارسال تیکت با خطا مواجه شد.", false);

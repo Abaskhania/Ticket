@@ -13,7 +13,7 @@ namespace SupportTicketSystem.Models
         public string Description { get; set; } = null;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public string Status { get; set; } = "در انتظار بررسی";
-
+        public DateTime? StatusAt { get; set; } = DateTime.Now;
         public string? Priority { get; set; } = null;
         public string? CategoryId { get; set; } = null;
         public string? CategoryText { get; set; } = null;
@@ -25,7 +25,7 @@ namespace SupportTicketSystem.Models
 
         public int? AssignedToUserId { get; set; }
         public User? AssignedToUser { get; set; }
-
+        public DateTime? AssignedAt { get; set; } = DateTime.Now;
         public string CreatedAtPersion
         {
             get
@@ -34,6 +34,22 @@ namespace SupportTicketSystem.Models
                 return $"{pc.GetYear(CreatedAt)}/{pc.GetMonth(CreatedAt):00}/{pc.GetDayOfMonth(CreatedAt):00}";
             }
         }
+        //public string AssignedAtPersion
+        //{
+        //    get
+        //    {
+        //        PersianCalendar pc = new PersianCalendar();
+        //        return $"{pc.GetYear(AssignedAt)}/{pc.GetMonth(AssignedAt):00}/{pc.GetDayOfMonth(AssignedAt):00}";
+        //    }
+        //}
+        //public string StatusAtPersion
+        //{
+        //    get
+        //    {
+        //        PersianCalendar pc = new PersianCalendar();
+        //        return $"{pc.GetYear(StatusAt)}/{pc.GetMonth(StatusAt):00}/{pc.GetDayOfMonth(StatusAt):00}";
+        //    }
+        //}
 
     }
 }

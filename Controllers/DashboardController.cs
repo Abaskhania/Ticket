@@ -72,7 +72,9 @@ namespace SupportTicketSystem.Api
                 return NotFound("تیکت پیدا نشد");
 
             ticket.AssignedToUserId = dto.UserId;
+            ticket.AssignedAt = DateTime.Now;
             ticket.Status = "در حال انجام";
+            ticket.StatusAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
 
@@ -98,6 +100,7 @@ namespace SupportTicketSystem.Api
             var tickets = await _context.Tickets
                 .Include(t => t.CreatedByUser)
                 .Where(t => t.AssignedToUserId == userId)
+                .OrderByDescending(t=>t.AssignedAt)
                 .ToListAsync();
 
             var response = tickets.Select(t => new
@@ -131,6 +134,7 @@ namespace SupportTicketSystem.Api
             bool wasDoneBefore = ticket.Status == "انجام شده";
 
             ticket.Status = dto.Status;
+            ticket.StatusAt = DateTime.Now;
 
             if (dto.Status == "انجام شده" && !wasDoneBefore)
             {

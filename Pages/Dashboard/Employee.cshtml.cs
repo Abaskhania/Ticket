@@ -31,7 +31,7 @@ namespace SupportTicketSystem.Pages.Dashboard
             if (int.TryParse(userIdStr, out int userId))
             {
                 // Load the tickets for the current user
-                UserTickets = await _context.Tickets
+                UserTickets = await _context.Tickets.AsNoTracking()
                     .Where(t => t.CreatedByUserId == userId)
                     .OrderByDescending(t => t.CreatedAt)  
                     .Skip((pagenumber-1)*pageSize)

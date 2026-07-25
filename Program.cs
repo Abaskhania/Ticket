@@ -31,6 +31,10 @@ namespace SupportTicketSystem
                 });
 
             var app = builder.Build();
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
 
             // Middleware
             if (!app.Environment.IsDevelopment())
