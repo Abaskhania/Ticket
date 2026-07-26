@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
 using SupportTicketSystem.Data;
-using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace SupportTicketSystem
 {
@@ -13,7 +14,23 @@ namespace SupportTicketSystem
             // اتصال به دیتابیس
             //builder.Services.AddDbContext<AppDbContext>(options =>
             //    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+            //Log.Logger = new LoggerConfiguration()
+            //.MinimumLevel.Information()
+            //.WriteTo.File(
+            //    path: @"C:\MyAppLogs\app-.log",
+            //    rollingInterval: RollingInterval.Day,
+            //    retainedFileCountLimit: 30,
+            //    shared: true)
+            //.CreateLogger();
 
+            //builder.Host.UseSerilog();
+            builder.Host.UseSerilog((context, services, configuration) =>
+            {
+                configuration
+                    .ReadFrom.Configuration(context.Configuration)
+                    .ReadFrom.Services(services)
+                    .Enrich.FromLogContext();
+            });
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
             builder.Services.AddSignalR();
@@ -47,7 +64,7 @@ namespace SupportTicketSystem
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            
             app.UseSession();
             app.UseAuthentication(); 
             app.UseAuthorization();

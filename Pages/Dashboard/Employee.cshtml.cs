@@ -10,10 +10,11 @@ namespace SupportTicketSystem.Pages.Dashboard
     public class EmployeeModel : PageModel
     {
         private readonly AppDbContext _context;
-
-        public EmployeeModel(AppDbContext context)
+        private readonly ILogger<EmployeeModel> _logger;
+        public EmployeeModel(AppDbContext context, ILogger<EmployeeModel> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // Holds the list of tickets for the current user
@@ -52,6 +53,7 @@ namespace SupportTicketSystem.Pages.Dashboard
             {
                 DisplayName = "کاربر"; // Default fallback
             }
+            _logger.LogInformation("Form was submitted");
         }
     }
 }
