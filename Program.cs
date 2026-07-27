@@ -31,6 +31,7 @@ namespace SupportTicketSystem
                     .ReadFrom.Services(services)
                     .Enrich.FromLogContext();
             });
+
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
             builder.Services.AddSignalR();
@@ -48,6 +49,25 @@ namespace SupportTicketSystem
                 });
 
             var app = builder.Build();
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    var exceptionHandler =
+                        context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+
+                    if (exceptionHandler?.Error is Exception ex)
+                    {
+                        Log.Error(ex, "خطا در شروع برنامه");
+                    }
+
+                    context.Response.StatusCode = 500;
+                    await context.Response.WriteAsJsonAsync(new
+                    {
+                        error = "خطا در شروع برنامه."
+                    });
+                });
+            });
             if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

@@ -9,10 +9,11 @@ namespace SupportTicketSystem.Pages.Dashboard
     public class ITModel : PageModel
     {
         private readonly AppDbContext _context;
-
-        public ITModel(AppDbContext context)
+        private readonly ILogger<ITModel> _logger;
+        public ITModel(AppDbContext context, ILogger<ITModel> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // Display name to show in the UI
@@ -20,20 +21,27 @@ namespace SupportTicketSystem.Pages.Dashboard
 
         public async Task OnGetAsync()
         {
-            // Get user ID from claims
-            var userIdStr = User.FindFirst("UserId")?.Value;
-
-            if (int.TryParse(userIdStr, out int userId))
+            try
             {
-                // Try to find user in the database
-                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+                // Get user ID from claims
+                var userIdStr = User.FindFirst("UserId")?.Value;
 
-                // Set display name from database or fallback to claim name
-                DisplayName = user?.FullName ?? User.Identity?.Name ?? "کاربر";
+                if (int.TryParse(userIdStr, out int userId))
+                {
+                    // Try to find user in the database
+                    var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+                    // Set display name from database or fallback to claim name
+                    DisplayName = user?.FullName ?? User.Identity?.Name ?? "کاربر";
+                }
+                else
+                {
+                    DisplayName = "کاربر";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                DisplayName = "کاربر";
+                _logger.LogError(ex, "خظا در واکشی اطلاعات از دیتابیس در صفحه IT");
             }
         }
     }

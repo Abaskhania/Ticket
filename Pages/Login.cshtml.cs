@@ -1,19 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SupportTicketSystem.Data;
+using SupportTicketSystem.Pages.Dashboard;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace SupportTicketSystem.Pages
 {
     public class LoginModel : PageModel
     {
         private readonly AppDbContext _context;
-
-        public LoginModel(AppDbContext context)
+        private readonly ILogger<LoginModel> _logger;
+        public LoginModel(AppDbContext context, ILogger<LoginModel> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [BindProperty]
@@ -32,32 +34,43 @@ namespace SupportTicketSystem.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
-            var user = _context.Users.FirstOrDefault(u => u.Username == Username && u.Password == Password);
-
-            if (user == null)
+            //try
             {
-                ErrorMessage = "❌ اطلاعات ورود اشتباه است.";
-                return Page();
-            }
 
-            var claims = new List<Claim>
+
+                var user = _context.Users.FirstOrDefault(u => u.Username == Username && u.Password == Password);
+
+                if (user == null)
+                {
+                    ErrorMessage = "❌ اطلاعات ورود اشتباه است.";
+                    return Page();
+                }
+
+                var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim("UserId", user.Id.ToString()),
                 new Claim(ClaimTypes.Role, user.Role ?? "")
             };
 
-            var identity = new ClaimsIdentity(claims, "Cookies");
-            var principal = new ClaimsPrincipal(identity);
+                var identity = new ClaimsIdentity(claims, "Cookies");
+                var principal = new ClaimsPrincipal(identity);
 
-            await HttpContext.SignInAsync("Cookies", principal);
+                await HttpContext.SignInAsync("Cookies", principal);
 
-            return user.Role switch
+                return user.Role switch
+                {
+                    "Admin" => RedirectToPage("/Dashboard/Admin"),
+                    "IT" => RedirectToPage("/Dashboard/IT"),
+                    _ => RedirectToPage("/Dashboard/Employee")
+                };
+            }
+            /*catch (Exception ex)
             {
-                "Admin" => RedirectToPage("/Dashboard/Admin"),
-                "IT" => RedirectToPage("/Dashboard/IT"),
-                _ => RedirectToPage("/Dashboard/Employee")
-            };
+                _logger.LogError(ex, "خظا در واکشی اطلاعات از دیتابیس در صفحه Login");
+                return StatusCode(500, "خطا در سمت سرور");
+
+            }*/
         }
     }
 }

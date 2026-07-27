@@ -27,33 +27,42 @@ namespace SupportTicketSystem.Pages.Dashboard
 
         public async Task OnGetAsync(int pagenumber=1)
         {
-            var userIdStr = User.FindFirst("UserId")?.Value;
-            currentPage = pagenumber;
-            if (int.TryParse(userIdStr, out int userId))
+            try
             {
-                // Load the tickets for the current user
-                UserTickets = await _context.Tickets.AsNoTracking()
-                    .Where(t => t.CreatedByUserId == userId)
-                    .OrderByDescending(t => t.CreatedAt)  
-                    .Skip((pagenumber-1)*pageSize)
-                    .Take(pageSize)
-                    .ToListAsync();
+                var userIdStr = User.FindFirst("UserId")?.Value;
+                currentPage = pagenumber;
+                if (int.TryParse(userIdStr, out int userId))
+                {
+                    // Load the tickets for the current user
+                    UserTickets = await _context.Tickets.AsNoTracking()
+                        .Where(t => t.CreatedByUserId == userId)
+                        .OrderByDescending(t => t.CreatedAt)
+                        .Skip((pagenumber - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToListAsync();
 
-                totalcount= await _context.Tickets
-                    .Where(t => t.CreatedByUserId == userId).CountAsync()
-                    ;
-                // Try to get user's full name from the Users table
-                var user = await _context.Users
-                    .FirstOrDefaultAsync(u => u.Id == userId);
+                    totalcount = await _context.Tickets
+                        .Where(t => t.CreatedByUserId == userId).CountAsync()
+                        ;
+                    // Try to get user's full name from the Users table
+                    var user = await _context.Users
+                        .FirstOrDefaultAsync(u => u.Id == userId);
 
-                // If found, set DisplayName to full name; fallback to username if not
-                DisplayName = user?.FullName ?? User.Identity?.Name ?? "کاربر";
+                    // If found, set DisplayName to full name; fallback to username if not
+                    DisplayName = user?.FullName ?? User.Identity?.Name ?? "کاربر";
+                }
+                else
+                {
+                    DisplayName = "کاربر"; // Default fallback
+                }
             }
-            else
+            catch (Exception ex)
             {
-                DisplayName = "کاربر"; // Default fallback
+                _logger.LogError(ex, "خظا در واکشی اطلاعات از دیتابیس در صفحه Employee");
+                
             }
-            _logger.LogInformation("Form was submitted");
+
+           
         }
     }
 }
