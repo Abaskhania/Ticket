@@ -34,7 +34,7 @@ namespace SupportTicketSystem.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
-            //try
+            try
             {
 
 
@@ -65,12 +65,12 @@ namespace SupportTicketSystem.Pages
                     _ => RedirectToPage("/Dashboard/Employee")
                 };
             }
-            /*catch (Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "خظا در واکشی اطلاعات از دیتابیس در صفحه Login");
                 return StatusCode(500, "خطا در سمت سرور");
 
-            }*/
+            }
         }
     }
 }
