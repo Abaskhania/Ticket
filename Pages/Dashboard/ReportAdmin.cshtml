@@ -1,0 +1,127 @@
+﻿@page
+@model SupportTicketSystem.Pages.Dashboard.ReportAdminModel
+@{
+}
+<div class="text-start">
+
+    <a class=" btn btn-light" asp-area="" asp-page="admin">
+        بازگشت
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5"></path>
+        </svg>
+    </a>
+</div>
+<div class="container-fluid">
+    <h4 class="mb-0">گزارش وضعیت تیکت های هر کارشناس</h4>
+    <hr />
+    <form class="row g-3" method="post" autocomplete="off">
+        <div class="col-auto">
+            <label for="FromDate" class="visually-hidden"> از تاریخ</label>
+            <input type="text" class="date form-control" autocomplete="off" asp-for="FromDate" placeholder="از تاریخ">
+        </div>
+        <div class="col-auto">
+            <label for="ToDate" class="visually-hidden">تا تاریخ</label>
+            <input type="text" class="date form-control" autocomplete="off" asp-for="ToDate" placeholder="تا تاریخ">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary mb-3">گزارش</button>
+        </div>
+    </form>
+</div>
+@{
+    int index = 1; // Start index from 1
+}
+@if (Model.ReportResult != null)
+
+{
+    <div class="container-fluid">
+        <div class="table-responsive">
+            <div class="scrollable-panel">
+
+       
+    
+                <table class="table table-striped bg-white">
+                    <thead>
+                        <tr>
+                            <th>
+                                ردیف
+
+                            </th>
+                            <th>
+                                کارشناس
+                            </th>
+                            <th>
+                                تعداد کل 
+                            </th>
+                            <th>
+                     در حال انجام
+                </th>
+                
+                            <th>
+                                انجام شده
+                            </th>
+
+                            <th>
+                                باطل شده
+                            </th>
+                            <th>میانگین زمان پاسخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        @foreach (var item in Model.ReportResult)
+                        {
+                            <tr>
+                                <td>
+
+                                    @index
+                                </td>
+                                <td>
+
+                                    @item.FullName
+                                </td>
+                                <td>@item.TotalTickets</td>
+                                <td>@item.InProcessTickets</td>
+                                <td>@item.CompletedTickets</td>
+                                <td>@item.ExpiredTickets</td>
+                                <td>                                    
+                                    @if(item.AverageResponseSeconds.HasValue)
+                                    {
+                                        @((item.AverageResponseSeconds / 3600).ToString() + ":" + ((item.AverageResponseSeconds % 3600) / 60).ToString() + ":" + (item.AverageResponseSeconds % 60).ToString())
+                                    }
+                                </td>
+                                
+                               
+
+                      
+                                
+                        
+
+                    
+
+
+                            </tr>
+                            index++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+<link href="~/css/persian-datepicker.min.css" rel="stylesheet" />
+@section Scripts {
+    <script src="~/js/persian-date.min.js"></script>
+    <script src="~/js/persian-datepicker.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            $(".date").pDatepicker({
+                format: "YYYY/MM/DD",
+                autoClose: true,
+                initialValue: false
+            });
+
+        });
+    </script>
+}

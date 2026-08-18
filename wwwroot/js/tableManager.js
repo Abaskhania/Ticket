@@ -1,17 +1,17 @@
 ﻿export function renderTable(tickets, itUsers, currentPage, rowsPerPage) {
     const start = (currentPage - 1) * rowsPerPage;
     const pageData = tickets.slice(start, start + rowsPerPage);
-
+    debugger;
     const table = document.getElementById("ticketTable");
     table.innerHTML = "";
 
     pageData.forEach((item, index) => {
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td class="border px-4 py-2">${start + index + 1}</td>
+            <td class="border px-4 py-2">${start + index + 1}</td>            
             <td class="border px-4 py-2">${item.userName}</td>
-            <td class="border px-4 py-2">${item.title}</td>
-            <td class="border px-4 py-2">${item.status}</td>
+            <td class="border px-4 py-2"><a href="TicketDetail?id=${item.id}"> ${item.title}</a></td>
+            <td class="border px-4 py-2">${item.status} ${item.ev === true ? '<span style="background-color:green;color:white;border-radius:3px;padding:1px;">&#10004; </span> ' : ''}</td>
             <td class="border px-4 py-2">
                 <select class="assign-dropdown border rounded px-2 py-1 text-sm">
                     <option value="">انتخاب کارشناس</option>

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SupportTicketSystem.Data;
+using SupportTicketSystem.Models;
 
 namespace SupportTicketSystem
 {
@@ -31,9 +32,11 @@ namespace SupportTicketSystem
                     .ReadFrom.Services(services)
                     .Enrich.FromLogContext();
             });
+            builder.Services.AddSignalR();
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
             builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+            builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddSignalR();
             // Razor Pages
             builder.Services.AddRazorPages();
@@ -90,7 +93,8 @@ namespace SupportTicketSystem
             app.UseAuthorization();
 
             app.MapRazorPages();
-            app.MapControllers(); 
+            app.MapControllers();
+            app.MapHub<NotificationHub>("/hubs/notifications");
 
             app.Run();
         }

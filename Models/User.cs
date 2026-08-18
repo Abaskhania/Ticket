@@ -13,7 +13,7 @@ namespace SupportTicketSystem.Models
         public string Password { get; set; } = "";
         public string Role { get; set; } = "";
 
-
+        public bool IsValid { get; set; }
 
     }
 }

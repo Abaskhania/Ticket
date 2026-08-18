@@ -1,0 +1,11 @@
+2026-08-17 08:28:49.348 +03:30 [ERR] Failed executing DbCommand (173ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [StatusHistories] (
+    [Id] int NOT NULL IDENTITY,
+    [TicketId] int NOT NULL,
+    [Status] nvarchar(max) NOT NULL,
+    [StatusAt] datetime2 NULL,
+    [StatusUserId] int NOT NULL,
+    CONSTRAINT [PK_StatusHistories] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_StatusHistories_Tickets_TicketId] FOREIGN KEY ([TicketId]) REFERENCES [Tickets] ([Id]) ON DELETE CASCADE,
+    CONSTRAINT [FK_StatusHistories_Users_StatusUserId] FOREIGN KEY ([StatusUserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+);

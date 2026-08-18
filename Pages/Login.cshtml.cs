@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using SupportTicketSystem.Data;
+using SupportTicketSystem.Models;
 using SupportTicketSystem.Pages.Dashboard;
 using System.Security.Claims;
 
@@ -42,6 +43,18 @@ namespace SupportTicketSystem.Pages
 
                 if (user == null)
                 {
+                    var logFailed = new UserLoginLog
+                    {
+                        UserId = Username,
+                        LoginTime = DateTime.Now,
+                        IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                        UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),
+                        IsSuccessful = false
+                    };
+
+                    _context.UserLoginLogs.Add(logFailed);
+
+                    await _context.SaveChangesAsync();
                     ErrorMessage = "❌ اطلاعات ورود اشتباه است.";
                     return Page();
                 }
@@ -49,12 +62,26 @@ namespace SupportTicketSystem.Pages
                 var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.NameIdentifier, user.Username),
                 new Claim("UserId", user.Id.ToString()),
+                new Claim("username", user.Username.ToString()),
                 new Claim(ClaimTypes.Role, user.Role ?? "")
             };
 
                 var identity = new ClaimsIdentity(claims, "Cookies");
                 var principal = new ClaimsPrincipal(identity);
+
+                var log = new UserLoginLog
+                {
+                    UserId = Username,
+                    LoginTime = DateTime.Now,
+                    IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
+                    UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),
+                    IsSuccessful = true
+                };
+
+                _context.UserLoginLogs.Add(log);
+                await _context.SaveChangesAsync();
 
                 await HttpContext.SignInAsync("Cookies", principal);
 

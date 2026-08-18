@@ -11,9 +11,18 @@ namespace SupportTicketSystem.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Ticket> Tickets { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Report1Result> Report1Results { get; set; }
+        public DbSet<UserLoginLog> UserLoginLogs { get; set; }
+        public DbSet<AssignHistory> AssignHistories { get; set; }
+        public DbSet<StatusHistory> StatusHistories { get; set; }
+        public DbSet<PushNotification> PushNotifications { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Report1Result>()
+            .HasNoKey()
+            .ToView(null);
             //base.OnModelCreating(modelBuilder);
 
             //// تنظیم صریح AUTOINCREMENT برای SQLite

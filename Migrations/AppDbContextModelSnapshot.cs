@@ -22,6 +22,53 @@ namespace SupportTicketSystem.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SupportTicketSystem.Models.AssignHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("AssignedToUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TicketId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssignedToUserId");
+
+                    b.HasIndex("TicketId");
+
+                    b.ToTable("AssignHistories");
+                });
+
+            modelBuilder.Entity("SupportTicketSystem.Models.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+                });
+
             modelBuilder.Entity("SupportTicketSystem.Models.Notification", b =>
                 {
                     b.Property<int>("Id")
@@ -57,6 +104,99 @@ namespace SupportTicketSystem.Migrations
                     b.ToTable("Notifications");
                 });
 
+            modelBuilder.Entity("SupportTicketSystem.Models.PushNotification", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TicketId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PushNotifications");
+                });
+
+            modelBuilder.Entity("SupportTicketSystem.Models.Report1Result", b =>
+                {
+                    b.Property<int?>("AverageResponseSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CompletedTickets")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ExpiredTickets")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("InProcessTickets")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalTickets")
+                        .HasColumnType("int");
+
+                    b.ToTable((string)null);
+
+                    b.ToView(null, (string)null);
+                });
+
+            modelBuilder.Entity("SupportTicketSystem.Models.StatusHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("StatusAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("StatusUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TicketId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StatusUserId");
+
+                    b.HasIndex("TicketId");
+
+                    b.ToTable("StatusHistories");
+                });
+
             modelBuilder.Entity("SupportTicketSystem.Models.Ticket", b =>
                 {
                     b.Property<int>("Id")
@@ -64,6 +204,9 @@ namespace SupportTicketSystem.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AssignedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("AssignedToUserId")
                         .HasColumnType("int");
@@ -87,12 +230,21 @@ namespace SupportTicketSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool?>("EmployeeVerif")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("EmployeeVerifAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Priority")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("StatusAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -119,6 +271,9 @@ namespace SupportTicketSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -136,6 +291,54 @@ namespace SupportTicketSystem.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("SupportTicketSystem.Models.UserLoginLog", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsSuccessful")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LoginTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LogoutTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserLoginLogs");
+                });
+
+            modelBuilder.Entity("SupportTicketSystem.Models.AssignHistory", b =>
+                {
+                    b.HasOne("SupportTicketSystem.Models.User", "AssignedToUser")
+                        .WithMany()
+                        .HasForeignKey("AssignedToUserId");
+
+                    b.HasOne("SupportTicketSystem.Models.Ticket", "Ticket")
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AssignedToUser");
+
+                    b.Navigation("Ticket");
+                });
+
             modelBuilder.Entity("SupportTicketSystem.Models.Notification", b =>
                 {
                     b.HasOne("SupportTicketSystem.Models.User", "User")
@@ -145,6 +348,25 @@ namespace SupportTicketSystem.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SupportTicketSystem.Models.StatusHistory", b =>
+                {
+                    b.HasOne("SupportTicketSystem.Models.User", "StatusUser")
+                        .WithMany()
+                        .HasForeignKey("StatusUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SupportTicketSystem.Models.Ticket", "Ticket")
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("StatusUser");
+
+                    b.Navigation("Ticket");
                 });
 
             modelBuilder.Entity("SupportTicketSystem.Models.Ticket", b =>

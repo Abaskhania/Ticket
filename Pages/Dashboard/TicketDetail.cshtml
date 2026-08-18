@@ -1,0 +1,99 @@
+﻿@page
+@model SupportTicketSystem.Pages.Dashboard.TicketDetailModel
+@{
+}
+<div class="text-start">
+
+    <a class=" btn btn-light" asp-area="" asp-page="admin">
+        بازگشت
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M14.5 1.5a.5.5 0 0 1 .5.5v4.8a2.5 2.5 0 0 1-2.5 2.5H2.707l3.347 3.346a.5.5 0 0 1-.708.708l-4.2-4.2a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 8.3H12.5A1.5 1.5 0 0 0 14 6.8V2a.5.5 0 0 1 .5-.5"></path>
+        </svg>
+    </a>
+</div>
+
+<div class="container-fluid">
+    <h4 class="mb-0">جزئیات تیکت</h4>
+    <hr />
+    <div class="row mb-2 ticket-row bg-white">
+        <div class="col-2">عنوان</div>
+        <div class="col-10">@Model.TicketDet.Title</div>
+    </div>
+    <div class="row mb-2 ticket-row">
+        <div class="col-2">شرح</div>
+        <div class="col-10">@Model.TicketDet.Description</div>
+    </div>
+    <div class="row mb-2 ticket-row bg-white">
+        <div class="col-2">تاریخ ایجاد</div>
+        <div class="col-10">@Model.TicketDet.CreatedAtPersion2</div>
+    </div>
+    <div class="row mb-2 ticket-row">
+        <div class="col-2">نام کاربر ایجاد کننده</div>
+        <div class="col-10">@Model.TicketDet.CreatedByUser.FullName</div>
+    </div>
+    <div class="row mb-2 ticket-row bg-white">
+        <div class="col-2">وضعیت</div>
+        <div class="col-10">@Model.TicketDet.Status</div>
+    </div>
+    <div class="row mb-2 ticket-row">
+        <div class="col-2">تاریخ تغییر وضعیت</div>
+        <div class="col-10">@Model.TicketDet.StatusAtPersion</div>
+    </div>
+    <div class="row mb-2 ticket-row bg-white">
+        <div class="col-2">اولویت</div>
+        <div class="col-10">@Model.TicketDet.Priority</div>
+    </div>
+    <div class="row mb-2 ticket-row ">
+        <div class="col-2">دسته بندی</div>
+        <div class="col-10">@Model.TicketDet.CategoryText</div>
+    </div>
+    <div class="row mb-2 ticket-row bg-white">
+        <div class="col-2">فایل</div>
+        <div class="col-10">
+            @if (@Model.TicketDet.AttachmentPath != null)
+            {
+                <a href="@Model.TicketDet.AttachmentPath" class="text-blue-600 underline" target="_blank">دانلود</a>
+            }
+            else
+            {
+                <span>ندارد</span>
+            }
+        </div>
+    </div>
+    @if ((Model.TicketDet.AssignedToUserId != null))
+    {
+        <div class="row mb-2 ticket-row">
+            <div class="col-2">ارجاع به</div>
+            <div class="col-10">@Model.TicketDet.AssignedToUser!.FullName</div>
+        </div>
+        <div class="row mb-2 ticket-row">
+            <div class="col-2">تاریخ ارجاع </div>
+            <div class="col-10">@Model.TicketDet.AssignedAtPersion</div>
+        </div>
+    }
+    @if ((Model.TicketDet.EmployeeVerif ?? false))
+    {
+        <div class="row  mb-2 ticket-row bg-white">
+            <div class="col-2">تایید درخواست کننده</div>
+            <div class="col-10">
+
+        
+                
+                <span style="background-color:green;color:white;border-radius:3px;padding:1px;">&#10004; </span>
+
+                
+            </div>
+        </div>
+        <div class="row mb-2 ticket-row bg-white">
+            <div class="col-2">تاریخ تایید درخواست کننده</div>
+            <div class="col-10">
+
+                @Model.TicketDet.EmployeeVerifAtPersion
+
+                
+            </div>
+        </div>
+
+    }
+
+</div>

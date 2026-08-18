@@ -9,7 +9,7 @@ export function renderCharts(tickets, itUsers) {
     if (barChartInstance) {
         barChartInstance.destroy();
     }
-
+    debugger;
     const ticketCountByUser = {};
     tickets.forEach(t => {
         if (t.assignedTo !== "هنوز ارجاع نشده") {

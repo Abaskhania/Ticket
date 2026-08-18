@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using SupportTicketSystem.Data;
@@ -24,11 +25,60 @@ namespace SupportTicketSystem.Pages.Dashboard
         public int currentPage { get; set; }
         // This will be shown instead of "پنل کاربر"
         public string DisplayName { get; set; }
-
-        public async Task OnGetAsync(int pagenumber=1)
+        public SelectList Categories { get; set; } = default!;
+        public async Task OnGetAsync(int pagenumber = 1)
         {
             try
             {
+
+                Categories = new SelectList(
+                    _context.Categories.ToList(),
+                    "Id",
+                    "Name"
+                );
+                var userIdStr = User.FindFirst("UserId")?.Value;
+                currentPage = pagenumber;
+                if (int.TryParse(userIdStr, out int userId))
+                {
+                    // Load the tickets for the current user
+                    UserTickets = await _context.Tickets.AsNoTracking()
+                        .Where(t => t.CreatedByUserId == userId)
+                        .OrderByDescending(t => t.CreatedAt)
+                        .Skip((pagenumber - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToListAsync();
+
+                    totalcount = await _context.Tickets
+                        .Where(t => t.CreatedByUserId == userId).CountAsync()
+                        ;
+                    // Try to get user's full name from the Users table
+                    var user = await _context.Users
+                        .FirstOrDefaultAsync(u => u.Id == userId);
+
+                    // If found, set DisplayName to full name; fallback to username if not
+                    DisplayName = user?.FullName ?? User.Identity?.Name ?? "کاربر";
+                }
+                else
+                {
+                    DisplayName = "کاربر"; // Default fallback
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "خظا در واکشی اطلاعات از دیتابیس در صفحه Employee");
+
+            }
+
+
+        }
+        public async Task OnGetEmployeeVerifAsync(int id,int pagenumber=1)
+        {
+            try
+            {
+                var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == id);
+                ticket.EmployeeVerif = true;
+                ticket.EmployeeVerifAt = DateTime.Now;
+                await _context.SaveChangesAsync();
                 var userIdStr = User.FindFirst("UserId")?.Value;
                 currentPage = pagenumber;
                 if (int.TryParse(userIdStr, out int userId))

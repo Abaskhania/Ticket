@@ -4,7 +4,22 @@
     ViewData["Title"] = "پنل IT";
     Layout = "_Layout";
 }
+@section Styles {
+    <style type="text/css">
+        .my-confirm-button {
+            background-color: #28a745 !important;
+            color: white !important;
+            border-radius: 8px !important;
+            padding: 10px 30px !important;
+            font-size: 16px !important;
+            border: none !important;
+        }
 
+            .my-confirm-button:hover {
+                background-color: #218838 !important;
+            }
+    </style>
+}
 <div class="min-h-screen flex bg-gray-100 font-vazir">
     <!-- Mobile Menu -->
     <div class="md:hidden fixed top-4 right-4 z-50">
@@ -15,8 +30,9 @@
     <aside id="sidebar" class="bg-[#1e293b] text-white w-64 p-6 space-y-4 transform md:translate-x-0 -translate-x-full fixed md:relative top-0 left-0 h-full md:h-auto z-40 transition-transform duration-300 ease-in-out rounded-r-xl shadow-2xl">
         <h2 class="text-xl font-bold border-b border-gray-600 pb-4 mb-4">@Model.DisplayName</h2>
         <nav class="flex-1 space-y-2 text-sm font-medium">
-            <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800">📥 درخواست‌ها</a>
-            <a href="#" class="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800">📊 آمار</a>
+            <a href="#" class="flex text-white items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800">📥 درخواست‌ها</a>
+            <a href="#" class="flex text-white items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800">📊 آمار</a>
+            <a href="AddCategory" class="flex text-white items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800"> اطلاعات پایه _دسته بندی </a>
         </nav>
     </aside>
 
@@ -25,6 +41,12 @@
 
     <!-- Main -->
     <main class="flex-1 p-6 transition-all w-full">
+        <div id="toast-container" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 hidden">
+            <div id="toast" class="px-6 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 border border-gray-400 bg-info text-gray-700">
+                <span id="toast-icon"></span>
+                <span id="toast-message"></span>
+            </div>
+        </div>
         <!-- Status Cards -->
         <div id="status-cards" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"></div>
         <!-- Ticket Table -->
@@ -35,6 +57,7 @@
                     <thead class="bg-gray-100 text-gray-700">
                         <tr>
                             <th class="px-4 py-2">#</th>
+                            <th class="px-4 py-2">کد تیکت</th>
                             <th class="px-4 py-2">کاربر</th>
                             <th class="px-4 py-2">عنوان</th>
                             <th class="px-4 py-2">توضیح</th>
@@ -56,6 +79,7 @@
 </div>
 
 @section Scripts {
+    
     <script type="module">
         import { renderStatusCards } from '/js/statusCards.js';
 
@@ -66,6 +90,25 @@
         function paginateData(data, page) {
             const start = (page - 1) * ROWS_PER_PAGE;
             return data.slice(start, start + ROWS_PER_PAGE);
+        }
+        function showToast(message, isSuccess = true) {
+            const toastContainer = document.getElementById("toast-container");
+            const toastMessage = document.getElementById("toast-message");
+            const toastIcon = document.getElementById("toast-icon");
+
+            toastMessage.innerHTML =  message;
+            toastIcon.innerHTML = isSuccess
+                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 00-1.414 0L9 11.586 6.707 9.293a1 1 0 10-1.414 1.414L9 14.414l7.121-7.121a1 1 0 000-1.414z" clip-rule="evenodd" /></svg>`
+                : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-10.707a1 1 0 00-1.414-1.414L10 8.586 7.707 6.293a1 1 0 00-1.414 1.414L8.586 10l-2.293 2.293a1 1 0 001.414 1.414L10 11.414l2.293 2.293a1 1 0 001.414-1.414L11.414 10l2.293-2.293z" clip-rule="evenodd" /></svg>`;
+
+            toastContainer.classList.remove("hidden");
+
+            toastContainer.addEventListener("click", function () {
+                toastContainer.classList.add("hidden");
+            });
+            /*setTimeout(() => {
+                toastContainer.classList.add("hidden");
+            }, 3000);*/
         }
 
         function renderPagination(totalItems) {
@@ -94,7 +137,8 @@
                 debugger;
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                    <td class="border px-4 py-2">${(currentPage - 1) * ROWS_PER_PAGE + index + 1}</td>
+                    <td class="border px-4 py-2">${(currentPage - 1) * ROWS_PER_PAGE + index + 1}</td> 
+                    <td class="border px-4 py-2">${item.id}</td>
                     <td class="border px-4 py-2">${item.userName}</td>
                     <td class="border px-4 py-2">${item.title}</td>
                     <td class="border px-4 py-2">${item.description}</td>
@@ -133,6 +177,7 @@
                     }
                 });
             });
+            renderPagination(allTickets.length);
         }
 
         function renderCardsFromLocal() {
@@ -149,10 +194,23 @@
             const res = await axios.get("/api/dashboard/it");
             allTickets = res.data;
             renderCardsFromLocal();
-            renderPagination(allTickets.length);
+            //renderPagination(allTickets.length);
             renderTable();
         });
-    </script>
+         async function  loadData()    {
+           const res = await axios.get("/api/dashboard/it");
+            allTickets = res.data;            
+            renderCardsFromLocal();
+            //renderPagination(allTickets.length);
+            renderTable();
+        }
+        window.loadData = loadData;
+        window.showToast = showToast;
 
+        
+    </script>
+    <script src="~/js/sweetalert.js"></script>
+    <script src="~/js/signalr.min.js"></script>
+    <script src="~/js/notification.js"></script>
     <script src="~/js/sidebar.js"></script>
 }

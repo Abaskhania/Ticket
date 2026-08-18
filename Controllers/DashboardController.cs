@@ -12,10 +12,12 @@ namespace SupportTicketSystem.Api
     public class DashboardController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly INotificationService _notificationService;
 
-        public DashboardController(AppDbContext context)
+        public DashboardController(AppDbContext context, INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         [HttpGet("admin")]
@@ -33,8 +35,11 @@ namespace SupportTicketSystem.Api
                 .OrderByDescending(t=>t.CreatedAt)
                 .ToListAsync();
 
+            
+
             var response = new
             {
+
                 tickets = tickets.Select(t => new
                 {
                     
@@ -43,7 +48,10 @@ namespace SupportTicketSystem.Api
                     UserName = t.CreatedByUser!.FullName,
                     Status = t.Status ?? "در انتظار بررسی",
                     AssignedTo = t.AssignedToUser != null ? t.AssignedToUser.FullName : "هنوز ارجاع نشده",
-                    AssignedToId = t.AssignedToUserId
+                    AssignedToId = t.AssignedToUserId,
+                    EV = t.EmployeeVerif ?? false,
+                    
+
                 })
                 ,
                 itUsers,
@@ -71,10 +79,27 @@ namespace SupportTicketSystem.Api
             if (ticket == null)
                 return NotFound("تیکت پیدا نشد");
 
+            User _user = _context.Users.FirstOrDefault(u => u.Id == dto.UserId);
             ticket.AssignedToUserId = dto.UserId;
             ticket.AssignedAt = DateTime.Now;
             ticket.Status = "در حال انجام";
             ticket.StatusAt = DateTime.Now;
+
+            AssignHistory assignHistory = new AssignHistory()
+            {
+                TicketId= ticketId,
+                AssignedAt= ticket.AssignedAt,
+                AssignedToUserId= ticket.AssignedToUserId
+            };
+            _context.AssignHistories.Add(assignHistory);
+
+            
+
+            await _notificationService.NotifyAsync(
+            _user!.Username,
+            "تیکت جدید",
+            $"تیکت {ticket.Id} به شما اختصاص داده شد.",
+            ticket.Id);
 
             await _context.SaveChangesAsync();
 
@@ -128,6 +153,14 @@ namespace SupportTicketSystem.Api
                 .Include(t => t.AssignedToUser)
                 .FirstOrDefaultAsync(t => t.AssignedToUserId == userId && t.Id == id);
 
+            User _user = _context.Users.FirstOrDefault(u => u.Id == ticket.CreatedByUserId);
+            await _notificationService.NotifyAsync(
+            _user!.Username,
+            ticket.Status,
+             $"تیکت شما با عنوان «{ticket.Title}» توسط کارشناس «{ticket.AssignedToUser?.FullName}» انجام شد." + " لطفا دکمه تایید را در کنار ردیف مورد نظر کلیک کنید. ",
+            ticket.Id);
+
+
             if (ticket == null)
                 return NotFound("تیکت یافت نشد یا اجازه دسترسی ندارید.");
 
@@ -136,13 +169,23 @@ namespace SupportTicketSystem.Api
             ticket.Status = dto.Status;
             ticket.StatusAt = DateTime.Now;
 
+            StatusHistory statusHistory = new StatusHistory()
+            {
+                StatusAt=ticket.StatusAt,
+                Status=ticket.Status,
+                StatusUserId=userId,
+                TicketId=ticket.Id
+            };
+            _context.StatusHistories.Add(statusHistory);
+
+
             if (dto.Status == "انجام شده" && !wasDoneBefore)
             {
                 var notif = new Notification
                 {
                     TicketId = ticket.Id,
                     UserId = ticket.CreatedByUserId,
-                    Message = $"تیکت شما با عنوان «{ticket.Title}» توسط کارشناس «{ticket.AssignedToUser?.FullName}» انجام شد.",
+                    Message = $"تیکت شما با عنوان «{ticket.Title}» توسط کارشناس «{ticket.AssignedToUser?.FullName}» انجام شد."+" لطفا دکمه تایید را در کنار ردیف مورد نظر کلیک کنید. ",
                     SenderName = ticket.AssignedToUser?.FullName ?? "کارشناس",
                     CreatedAt = DateTime.Now,
                     IsRead = false
@@ -193,9 +236,9 @@ namespace SupportTicketSystem.Api
         public async Task<IActionResult> GetMyNotifications()
         {
             var userId = int.Parse(User.FindFirst("UserId")!.Value);
-
-            var notifications = await _context.Notifications
-                .Where(n => n.UserId == userId && !n.IsRead)
+            User _user = _context.Users.FirstOrDefault(u => u.Id == userId);
+            var notifications = await _context.PushNotifications
+                .Where(n => n.UserId == _user.Username && !n.IsRead)
                 .OrderByDescending(n => n.CreatedAt)
                 .Take(10)
                 .ToListAsync();

@@ -1,0 +1,8 @@
+﻿.ticket-row {
+    padding: 10px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.ticket-row:nth-child(even) {
+    background-color: #f8f9fa;
+}
