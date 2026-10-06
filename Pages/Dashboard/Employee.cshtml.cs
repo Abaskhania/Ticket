@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -8,6 +10,7 @@ using System.Security.Claims;
 
 namespace SupportTicketSystem.Pages.Dashboard
 {
+    [Authorize]
     public class EmployeeModel : PageModel
     {
         private readonly AppDbContext _context;
@@ -26,6 +29,7 @@ namespace SupportTicketSystem.Pages.Dashboard
         // This will be shown instead of "پنل کاربر"
         public string DisplayName { get; set; }
         public SelectList Categories { get; set; } = default!;
+        
         public async Task OnGetAsync(int pagenumber = 1)
         {
             try
@@ -41,7 +45,7 @@ namespace SupportTicketSystem.Pages.Dashboard
                 if (int.TryParse(userIdStr, out int userId))
                 {
                     // Load the tickets for the current user
-                    UserTickets = await _context.Tickets.AsNoTracking()
+                    UserTickets = await _context.Tickets.Include(t=>t.AssignedToUser).AsNoTracking()
                         .Where(t => t.CreatedByUserId == userId)
                         .OrderByDescending(t => t.CreatedAt)
                         .Skip((pagenumber - 1) * pageSize)
@@ -71,20 +75,26 @@ namespace SupportTicketSystem.Pages.Dashboard
 
 
         }
-        public async Task OnGetEmployeeVerifAsync(int id,int pagenumber=1)
+        public async Task<IActionResult> OnGetEmployeeVerifAsync(int id,int pagenumber=1)
         {
             try
             {
-                var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == id);
-                ticket.EmployeeVerif = true;
-                ticket.EmployeeVerifAt = DateTime.Now;
-                await _context.SaveChangesAsync();
-                var userIdStr = User.FindFirst("UserId")?.Value;
+                var userIdStr = User.FindFirst("UserId")?.Value;              
+                
                 currentPage = pagenumber;
                 if (int.TryParse(userIdStr, out int userId))
                 {
+                    var ticket = await _context.Tickets.FirstOrDefaultAsync(t => t.Id == id && t.CreatedByUserId == userId);
+                    if (ticket != null)
+                    {
+                        ticket.EmployeeVerif = true;
+                        ticket.EmployeeVerifAt = DateTime.Now;
+                        await _context.SaveChangesAsync();
+                    }
+
+
                     // Load the tickets for the current user
-                    UserTickets = await _context.Tickets.AsNoTracking()
+                    UserTickets = await _context.Tickets.Include(t => t.AssignedToUser).AsNoTracking()
                         .Where(t => t.CreatedByUserId == userId)
                         .OrderByDescending(t => t.CreatedAt)
                         .Skip((pagenumber - 1) * pageSize)
@@ -111,7 +121,7 @@ namespace SupportTicketSystem.Pages.Dashboard
                 _logger.LogError(ex, "خظا در واکشی اطلاعات از دیتابیس در صفحه Employee");
                 
             }
-
+            return RedirectToPage("Employee",new { pagenumber = (Request.Query["pagenumber"].ToString() ?? "1") });
            
         }
     }

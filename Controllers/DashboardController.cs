@@ -118,15 +118,18 @@ namespace SupportTicketSystem.Api
 
         [HttpGet("it")]
         [Authorize(Roles = "IT")]
-        public async Task<IActionResult> GetITTickets()
+        public async Task<IActionResult> GetITTickets(string searchstr="")
         {
             var userId = int.Parse(User.FindFirst("UserId")!.Value);
+            
 
             var tickets = await _context.Tickets
                 .Include(t => t.CreatedByUser)
-                .Where(t => t.AssignedToUserId == userId)
-                .OrderByDescending(t=>t.AssignedAt)
+                .Where(t => t.AssignedToUserId == userId )
+                .OrderByDescending(t => t.AssignedAt)
                 .ToListAsync();
+            
+            
 
             var response = tickets.Select(t => new
             {
@@ -154,11 +157,7 @@ namespace SupportTicketSystem.Api
                 .FirstOrDefaultAsync(t => t.AssignedToUserId == userId && t.Id == id);
 
             User _user = _context.Users.FirstOrDefault(u => u.Id == ticket.CreatedByUserId);
-            await _notificationService.NotifyAsync(
-            _user!.Username,
-            ticket.Status,
-             $"تیکت شما با عنوان «{ticket.Title}» توسط کارشناس «{ticket.AssignedToUser?.FullName}» انجام شد." + " لطفا دکمه تایید را در کنار ردیف مورد نظر کلیک کنید. ",
-            ticket.Id);
+           
 
 
             if (ticket == null)
@@ -192,6 +191,12 @@ namespace SupportTicketSystem.Api
                 };
 
                 _context.Notifications.Add(notif);
+
+                await _notificationService.NotifyAsync(
+               _user!.Username,
+               ticket.Status,
+                $"تیکت شما با عنوان «{ticket.Title}» توسط کارشناس «{ticket.AssignedToUser?.FullName}» انجام شد." + " لطفا دکمه تایید را در کنار ردیف مورد نظر کلیک کنید. ",
+               ticket.Id);
             }
 
             await _context.SaveChangesAsync();

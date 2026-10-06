@@ -7,7 +7,7 @@ using static SupportTicketSystem.Pages.RegisterModel;
 
 namespace SupportTicketSystem.Pages.Dashboard
 {
-    [Authorize(Roles="IT")]
+    [Authorize(Roles="IT,Admin")]
     public class AddCategoryModel : PageModel
     {
         private readonly AppDbContext _context;

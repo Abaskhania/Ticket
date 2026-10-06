@@ -49,6 +49,14 @@ namespace SupportTicketSystem
                 .AddCookie("Cookies", options =>
                 {
                     options.LoginPath = "/Login";
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                    options.SlidingExpiration = true;
+                    
+                    options.Events.OnRedirectToLogin = context =>
+                    {
+                        context.Response.Redirect("/Login");
+                        return Task.CompletedTask;
+                    };
                 });
 
             var app = builder.Build();

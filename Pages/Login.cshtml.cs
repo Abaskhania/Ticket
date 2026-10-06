@@ -45,7 +45,7 @@ namespace SupportTicketSystem.Pages
                 {
                     var logFailed = new UserLoginLog
                     {
-                        UserId = Username,
+                        UserId = Username.ToLower(),
                         LoginTime = DateTime.Now,
                         IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
                         UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),
@@ -73,7 +73,7 @@ namespace SupportTicketSystem.Pages
 
                 var log = new UserLoginLog
                 {
-                    UserId = Username,
+                    UserId = Username.ToLower(),
                     LoginTime = DateTime.Now,
                     IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString(),
                     UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),

@@ -21,7 +21,7 @@
                 </select>
             </td>
             <td class="border px-4 py-2">
-                <button class="update-btn bg-blue-500 text-white px-3 py-1 rounded text-xs" data-id="${item.id}">ثبت</button>
+            ${item.ev === false ? '<button class="update-btn bg-blue-500 text-white px-3 py-1 rounded text-xs"  data-id="${item.id}">ثبت</button>':''}
             </td>
         `;
         table.appendChild(row);

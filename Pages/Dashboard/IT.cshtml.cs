@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using SupportTicketSystem.Data;
@@ -6,6 +7,7 @@ using System.Security.Claims;
 
 namespace SupportTicketSystem.Pages.Dashboard
 {
+    [Authorize]
     public class ITModel : PageModel
     {
         private readonly AppDbContext _context;

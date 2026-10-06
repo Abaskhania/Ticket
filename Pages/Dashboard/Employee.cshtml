@@ -34,7 +34,7 @@
         <h2 class="text-xl font-bold border-b border-gray-600 pb-4 mb-4">@Model.DisplayName</h2>
         <nav class="flex-1 space-y-2 text-sm font-medium">
             <a href="#divSendTicket" class="flex  text-white items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800">ارسال تیکت</a>
-            <a href="#divTarikhcheh" class="flex text-white items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800">تاریخچه</a>
+            <a href="Employee" class="flex text-white items-center gap-3 px-4 py-2 rounded-lg hover:bg-blue-800">تاریخچه</a>
         </nav>
     </aside>
 
@@ -57,11 +57,13 @@
                 <table class="w-full text-sm border border-gray-200">
                     <thead class="bg-gray-100 text-right">
                         <tr>
+                            <th class="p-2">کد تیکت</th>
                             <th class="p-2">عنوان</th>
                             <th class="p-2">تاریخ</th>
                             <th class="p-2">اولویت</th>
                             <th class="p-2">دسته بندی</th>
                             <th class="p-2">وضعیت</th>
+                            
                             <th class="p-2">فایل</th>
                         </tr>
                     </thead>
@@ -69,6 +71,7 @@
                         @foreach (var ticket in Model.UserTickets)
                         {
                             <tr class="border-t border-gray-200">
+                                <td class="p-2">@ticket.Id.ToString()</td>
                                 <td class="p-2">@ticket.Title</td>
                                 <td class="p-2">@ticket.CreatedAtPersion</td>
                                 <td class="p-2">@ticket.Priority</td>
@@ -79,7 +82,12 @@
                                         <a asp-page-handler="EmployeeVerif" asp-page="Employee" asp-route-id="@ticket.Id" asp-route-pagenumber="@Model.currentPage" target="_blank" class="text-blue-600 underline">تایید</a>
 
                                     }
-
+                                    @if (ticket.Status == "در حال انجام")
+                                    {
+                                        <span>;</span>
+                                        <span>کارشناس:</span>
+                                        <b>@ticket.AssignedToUser!.FullName</b>
+                                    }
 
                                 </td>
 
@@ -156,11 +164,11 @@
 @section Scripts {
 
     <script>
-
+        
         const ROWS_PER_PAGE = 10;       
         let currentPage = @Model.currentPage;
         function reloadPage() {
-            location.reload();
+            window.location.reload();
         }
 
         
@@ -214,7 +222,12 @@
                         });
 
                         showToast(res.data?.message || "با موفقیت ثبت شد ✅", true);
-                        window.setTimeout(reloadPage, 3000);
+                        window.scrollTo({
+                          top: 0,
+                          left: 0,
+                          behavior: "smooth",
+                        });
+                        window.setTimeout(function(){window.location.reload();}, 2000);
                         
                         /*const now = new Date();
                         const persianDate = now.toLocaleDateString('fa-IR');

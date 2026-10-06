@@ -58,7 +58,7 @@ namespace SupportTicketSystem.Pages
             User uExists = _context.Users.FirstOrDefault(u => u.Username == this.Input.Username)!;
             if (uExists == null)
             {
-                User u = new User { Username = this.Input.Username,FullName=this.Input.FullName, Password = this.Input.Password, Role = "User" };
+                User u = new User { Username = this.Input.Username,FullName=this.Input.FullName, Password = this.Input.Password, Role = "Employee" };
                 _context.Users.Add(u);
                 _context.SaveChanges();
                 this.Result = "ثبت‌ نام با موفقیت انجام شد!";
