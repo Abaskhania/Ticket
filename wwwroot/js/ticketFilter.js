@@ -6,8 +6,9 @@
         const status = document.getElementById("statusFilter").value;
 
         filtered = allTickets.filter(t => {
-            const matchName = t.userName.toLowerCase().includes(search);
+            const matchName = (t.userName.toLowerCase().includes(search) || t.title.toLowerCase().includes(search));
             const matchStatus = !status || t.status === status;
+            
             return matchName && matchStatus;
         });
 

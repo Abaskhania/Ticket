@@ -4,5 +4,5 @@
 }
 
 .ticket-row:nth-child(even) {
-    background-color: #f8f9fa;
+    background-color: black;
 }
